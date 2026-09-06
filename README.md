@@ -2,11 +2,7 @@
 
 Minimal reproduction for [`next-lint-to-eslint-cli`](https://github.com/vercel/next.js/blob/canary/packages/next-codemod/transforms/next-lint-to-eslint-cli.ts) hardcoding `npx` when running `@eslint/migrate-config`, even in pnpm projects.
 
-## What this repo is
-
-- Next.js **14.2.18** (legacy `.eslintrc.json`, not flat config)
-- Package manager: **pnpm** (`pnpm-lock.yaml`)
-- `package.json` script: `"lint": "next lint"`
+This repo is the result of the steps below. Next.js **14.x** scaffolds legacy `.eslintrc.json` (not flat `eslint.config.mjs`), which is required to hit the migrate-config code path.
 
 ## Codemod version tested
 
@@ -14,23 +10,31 @@ Minimal reproduction for [`next-lint-to-eslint-cli`](https://github.com/vercel/n
 
 ## Reproduce (step by step)
 
-1. Clone this repo:
+1. Create a Next.js 14 app with pnpm and ESLint enabled:
 
    ```bash
-   git clone https://github.com/princeeze/next-codemod-pnpm-repro.git
-   cd next-codemod-pnpm-repro
+   mkdir next-codemod-pnpm-repro && cd next-codemod-pnpm-repro
+   pnpm dlx create-next-app@14.2.18 . \
+     --ts --eslint --app --no-tailwind --no-src-dir \
+     --import-alias "@/*" --use-pnpm
    ```
 
-2. Install dependencies:
+2. Confirm the project matches the bug prerequisites:
 
    ```bash
-   pnpm install
+   test -f pnpm-lock.yaml && echo "pnpm-lock.yaml OK"
+   test -f .eslintrc.json && echo ".eslintrc.json OK"
+   grep '"lint": "next lint"' package.json
    ```
 
-3. Ensure a clean git working tree (the codemod requires it):
+   You should see a legacy `.eslintrc.json` (not `eslint.config.mjs`) and a `pnpm-lock.yaml`.
+
+3. Initialize git and commit (the codemod requires a clean working tree):
 
    ```bash
-   git status
+   git init
+   git add -A
+   git commit -m "Initial Next.js 14.2.18 pnpm repro"
    ```
 
 4. Run the published codemod with pnpm:
